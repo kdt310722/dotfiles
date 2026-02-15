@@ -76,7 +76,13 @@ bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 unsetopt noclobber
 
-touch $ZSH_INITIALIZED_FILE
+if has_command fzf; then
+  source <(fzf --zsh)
+fi
+
+if has_command zoxide; then
+  eval "$(zoxide init zsh)"
+fi
 
 if has_command bun; then
   export BUN_INSTALL="$HOME/.bun"
@@ -96,3 +102,5 @@ if has_command pnpm; then
   export PNPM_HOME="$HOME/.pnpm"
   export PATH="$PNPM_HOME:$PATH"
 fi
+
+touch $ZSH_INITIALIZED_FILE
