@@ -10,14 +10,14 @@ declare -A PACKAGES_DEBIAN=(
     ["text"]="nano vim grep sed gawk jq"
     ["compression"]="zip unzip gzip bzip2"
     ["system"]="zsh htop git tree gpg bat fzf ripgrep fd-find libnotify-bin"
-    ["build"]="build-essential python3 python3-pip terminal-notifier"
+    ["build"]="build-essential python3 python3-pip"
 )
 
 declare -A PACKAGES_MACOS=(
     ["network"]="curl wget openssl"
     ["text"]="nano vim grep gnu-sed jq"
     ["compression"]="zip unzip gzip"
-    ["system"]="zsh htop git tree gpg eza bat fzf ripgrep fd"
+    ["system"]="zsh htop git tree gpg eza bat fzf ripgrep fd terminal-notifier"
     ["build"]="python3"
 )
 
