@@ -9,8 +9,8 @@ declare -A PACKAGES_DEBIAN=(
     ["network"]="curl wget net-tools iputils-ping traceroute dnsutils openssl"
     ["text"]="nano vim grep sed gawk jq"
     ["compression"]="zip unzip gzip bzip2"
-    ["system"]="zsh htop git tree gpg bat fzf ripgrep fd-find"
-    ["build"]="build-essential python3 python3-pip"
+    ["system"]="zsh htop git tree gpg bat fzf ripgrep fd-find libnotify-bin"
+    ["build"]="build-essential python3 python3-pip terminal-notifier"
 )
 
 declare -A PACKAGES_MACOS=(

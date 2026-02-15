@@ -198,3 +198,84 @@ get_github_binary_download_url_and_version() {
 
   echo "${base_url}/download/v${version}/${full_binary_name}|$version"
 }
+
+notify() {
+    local title="$1"
+    local message="$2"
+
+    case "$PLATFORM" in
+      darwin)
+        if has_command terminal-notifier; then
+          terminal-notifier -title "$title" -message "$message"
+        fi
+        ;;
+      linux)
+        if has_command notify-send; then
+          notify-send "$title" "$message"
+        fi
+        ;;
+    esac
+}
+
+export BGR_TASKS_DIR="${ZSH_DATA_DIR}/bgr"
+
+create_dir "$BGR_TASKS_DIR"
+
+bgr() {
+  local cmd="$1"
+  local task_name="${2:-}"
+  local title="${3:-Background Task}"
+  local success_message="${4:-Task finished successfully}"
+  local failure_message="${5:-Task failed}"
+
+  if [[ -z "$task_name" ]]; then
+    return 0
+  fi
+
+  local lock_file="${BGR_TASKS_DIR}/${task_name}.lock"
+
+  if [[ -f "$lock_file" ]]; then
+    local existing_pid=$(cat "$lock_file" 2>/dev/null)
+
+    if [[ -n "$existing_pid" ]] && kill -0 "$existing_pid" 2>/dev/null; then
+      return 0
+    else
+      rm -f "$lock_file"
+    fi
+  fi
+
+  setopt LOCAL_OPTIONS NO_NOTIFY NO_MONITOR
+
+  {
+    local task_id=$$
+    local task_identifier="${task_name}-${task_id}"
+    local output_file="${BGR_TASKS_DIR}/${task_identifier}.log"
+    local pid_file="${BGR_TASKS_DIR}/${task_identifier}.pid"
+    local start_time=$EPOCHSECONDS
+    local exit_status=0
+    local display_name="$task_name"
+
+    echo $$ > "$lock_file"
+    echo $$ > "$pid_file"
+
+    notify "$title" "Command started ($display_name)"
+
+    eval "$cmd" > "$output_file" 2>&1 || exit_status=$?
+
+    local elapsed=$(( EPOCHSECONDS - start_time ))
+    local elapsed_formatted="$(( elapsed % 60 ))s"
+
+    (( elapsed < 60 )) || elapsed_formatted="$((( elapsed % 3600) / 60 ))m $elapsed_formatted"
+    (( elapsed < 3600 )) || elapsed_formatted="$(( elapsed / 3600 ))h $elapsed_formatted"
+
+    if [[ $exit_status -eq 0 ]]; then
+      notify "$title" "$success_message (took $elapsed_formatted, $display_name)"
+    else
+      notify "$title" "$failure_message (took $elapsed_formatted, exit code: $exit_status, $display_name)"
+    fi
+
+    rm -f "$pid_file" "$lock_file"
+
+    return $exit_status
+  } &!
+}
