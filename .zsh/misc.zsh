@@ -5,7 +5,7 @@ bak() {
 
   for f in "$@"; do
     if [[ ! -e "$f" ]]; then
-      echo "file not found: $f" >&2
+      print -P "%F{red}Error: file not found: $f%f" >&2
       continue
     fi
 

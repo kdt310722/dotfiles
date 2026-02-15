@@ -28,7 +28,7 @@ download_file() {
   local filename="$2"
 
   if [[ -z $url ]] || [[ -z $filename ]]; then
-    echo "Error: URL and filename are required" >&2
+    print -P "%F{red}Error: URL and filename are required%f" >&2
     return 1
   fi
 
@@ -37,7 +37,7 @@ download_file() {
   elif has_command wget; then
     wget -q -O "$filename" "$url"
   else
-    echo "Error: Neither curl nor wget is available" >&2
+    print -P "%F{red}Error: Neither curl nor wget is available%f" >&2
     return 1
   fi
 }
@@ -47,12 +47,12 @@ extract_archive() {
   local output_dir="$2"
 
   if [[ -z $archive ]]; then
-    echo "Error: Archive file is required" >&2
+    print -P "%F{red}Error: Archive file is required%f" >&2
     return 1
   fi
 
   if [[ ! -f $archive ]]; then
-    echo "Error: Archive file not found: $archive" >&2
+    print -P "%F{red}Error: Archive file not found: $archive%f" >&2
     return 1
   fi
 
@@ -76,12 +76,12 @@ extract_archive() {
           unzip -q "$archive"
         fi
       else
-        echo "Error: unzip command not available" >&2
+        print -P "%F{red}Error: unzip command not available%f" >&2
         return 1
       fi
       ;;
     *)
-      echo "Error: Unsupported archive format: $archive" >&2
+      print -P "%F{red}Error: Unsupported archive format: $archive%f" >&2
       return 1
       ;;
   esac
@@ -92,12 +92,12 @@ verify_sha256() {
   local expected_hash="$2"
 
   if [[ -z $file ]] || [[ -z $expected_hash ]]; then
-    echo "Error: File and expected hash are required" >&2
+    print -P "%F{red}Error: File and expected hash are required%f" >&2
     return 1
   fi
 
   if [[ ! -f $file ]]; then
-    echo "Error: File not found: $file" >&2
+    print -P "%F{red}Error: File not found: $file%f" >&2
     return 1
   fi
 
@@ -107,14 +107,14 @@ verify_sha256() {
     if has_command shasum; then
       actual_hash=$(shasum -a 256 "$file" | awk '{print $1}')
     else
-      echo "Error: shasum command not available" >&2
+      print -P "%F{red}Error: shasum command not available%f" >&2
       return 1
     fi
   else
     if has_command sha256sum; then
       actual_hash=$(sha256sum "$file" | awk '{print $1}')
     else
-      echo "Error: sha256sum command not available" >&2
+      print -P "%F{red}Error: sha256sum command not available%f" >&2
       return 1
     fi
   fi
@@ -122,9 +122,9 @@ verify_sha256() {
   if [[ "$actual_hash" == "$expected_hash" ]]; then
     return 0
   else
-    echo "Error: SHA256 verification failed" >&2
-    echo "Expected: $expected_hash" >&2
-    echo "Actual:   $actual_hash" >&2
+    print -P "%F{red}Error: SHA256 verification failed%f" >&2
+    print -P "%F{red}Error: Expected: $expected_hash%f" >&2
+    print -P "%F{red}Error: Actual:   $actual_hash%f" >&2
     return 1
   fi
 }
@@ -133,7 +133,7 @@ get_latest_github_version() {
   local version=$(curl -fsSL "${1}/latest" | grep -o 'tag/v[0-9.]*' | head -1 | cut -d'/' -f2 | cut -d'v' -f2)
 
   if [[ -z "$version" ]]; then
-    echo "Error: Failed to fetch latest version" >&2
+    print -P "%F{red}Error: Failed to fetch latest version%f" >&2
     return 1
   fi
 
@@ -168,7 +168,7 @@ get_github_binary_download_url_and_version() {
       platform_map=$linux_platform_map
       ;;
     *)
-      echo "Error: Unsupported platform: $PLATFORM" >&2
+      print -P "%F{red}Error: Unsupported platform: $PLATFORM%f" >&2
       return 1
       ;;
   esac
@@ -181,7 +181,7 @@ get_github_binary_download_url_and_version() {
       arch_map=$arm64_arch_map
       ;;
     *)
-      echo "Error: Unsupported architecture: $ARCH" >&2
+      print -P "%F{red}Error: Unsupported architecture: $ARCH%f" >&2
       return 1
       ;;
   esac

@@ -20,14 +20,14 @@ if [[ ! -d $ANTIDOTE_SOURCE_DIR ]]; then
 fi
 
 if [[ ! -f "${ANTIDOTE_SOURCE_DIR}/antidote.zsh" ]]; then
-  echo "Error: antidote.zsh not found at ${ANTIDOTE_SOURCE_DIR}/antidote.zsh" >&2
+  print -P "%F{red}Error: antidote.zsh not found at ${ANTIDOTE_SOURCE_DIR}/antidote.zsh%f" >&2
   return 1
 fi
 
 source "${ANTIDOTE_SOURCE_DIR}/antidote.zsh"
 
 if ! has_command antidote; then
-  echo "Error: antidote command not found" >&2
+  print -P "%F{red}Error: antidote command not found%f" >&2
   return 1
 fi
 

@@ -23,7 +23,7 @@ install_tealdeer() {
   local result=$(get_github_binary_download_url_and_version "latest" "$TEALDEER_BASE_URL" "linux" "macos" "x86_64" "aarch64" "tealdeer" "true")
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to get download URL" >&2
+    print -P "%F{red}Error: Failed to get download URL%f" >&2
     return 1
   fi
 
@@ -41,7 +41,7 @@ install_tealdeer() {
   download_file "$download_url" "$binary_file"
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to download Tealdeer binary" >&2
+    print -P "%F{red}Error: Failed to download Tealdeer binary%f" >&2
     rm -rf "$temp_dir"
     return 1
   fi
@@ -51,7 +51,7 @@ install_tealdeer() {
   download_file "${download_url}.sha256" "$sha256_file"
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to download SHA256 hash file" >&2
+    print -P "%F{red}Error: Failed to download SHA256 hash file%f" >&2
     rm -rf "$temp_dir"
     return 1
   fi
@@ -63,7 +63,7 @@ install_tealdeer() {
   verify_sha256 "$binary_file" "$expected_hash"
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: SHA256 verification failed" >&2
+    print -P "%F{red}Error: SHA256 verification failed%f" >&2
     rm -rf "$temp_dir"
     return 1
   fi
@@ -73,7 +73,7 @@ install_tealdeer() {
   download_file "${TEALDEER_BASE_URL}/download/v${actual_version}/completions_zsh" "${temp_dir}/_tealdeer"
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to download completions file" >&2
+    print -P "%F{red}Error: Failed to download completions file%f" >&2
     rm -rf "$temp_dir"
     return 1
   fi
@@ -106,7 +106,7 @@ update_tealdeer() {
   local latest_version=$(get_latest_github_version "$TEALDEER_BASE_URL")
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to check for updates" >&2
+    print -P "%F{red}Error: Failed to check for updates%f" >&2
     return 1
   fi
 

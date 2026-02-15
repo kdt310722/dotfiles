@@ -11,7 +11,7 @@ install_starship() {
   local result=$(get_github_binary_download_url_and_version "latest" "$STARSHIP_BASE_URL" "unknown-linux-gnu" "apple-darwin" "x86_64" "aarch64" "starship")
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to get download URL" >&2
+    print -P "%F{red}Error: Failed to get download URL%f" >&2
     return 1
   fi
 
@@ -29,7 +29,7 @@ install_starship() {
   download_file "$download_url" "$archive_file"
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to download Starship binary" >&2
+    print -P "%F{red}Error: Failed to download Starship binary%f" >&2
     rm -rf "$temp_dir"
     return 1
   fi
@@ -39,7 +39,7 @@ install_starship() {
   download_file "${download_url}.sha256" "$sha256_file"
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to download SHA256 hash file" >&2
+    print -P "%F{red}Error: Failed to download SHA256 hash file%f" >&2
     rm -rf "$temp_dir"
     return 1
   fi
@@ -51,7 +51,7 @@ install_starship() {
   verify_sha256 "$archive_file" "$expected_hash"
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: SHA256 verification failed" >&2
+    print -P "%F{red}Error: SHA256 verification failed%f" >&2
     rm -rf "$temp_dir"
     return 1
   fi
@@ -61,7 +61,7 @@ install_starship() {
   extract_archive "$archive_file" "$temp_dir"
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to extract archive" >&2
+    print -P "%F{red}Error: Failed to extract archive%f" >&2
     rm -rf "$temp_dir"
     return 1
   fi
@@ -91,7 +91,7 @@ update_starship() {
   local latest_version=$(get_latest_github_version "$STARSHIP_BASE_URL")
 
   if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to check for updates" >&2
+    print -P "%F{red}Error: Failed to check for updates%f" >&2
     return 1
   fi
 

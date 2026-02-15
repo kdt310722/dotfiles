@@ -67,7 +67,7 @@ run_updates() {
     eval "$cmd"
 
     if [[ $? -ne 0 ]]; then
-      echo "Warning: Update command failed: $cmd" >&2
+      print -P "%F{red}Error: Warning: Update command failed: $cmd%f" >&2
       failed=1
     fi
   done
@@ -76,7 +76,7 @@ run_updates() {
     date +%s > "$UPDATER_TIMESTAMP_FILE"
     echo "Updates completed successfully."
   else
-    echo "Some updates failed. Will retry on next session." >&2
+    print -P "%F{red}Error: Some updates failed. Will retry on next session.%f" >&2
   fi
 
   release_lock

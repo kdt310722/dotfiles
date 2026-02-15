@@ -40,8 +40,8 @@ export PATH="${ZSH_BIN_DIR}:$PATH"
 fpath=($ZSH_COMPLETIONS_DIR $fpath)
 
 if [[ ! -f "${ZSH_DIR}/helpers.zsh" ]]; then
-  echo "Error: helpers.zsh not found at ${ZSH_DIR}/helpers.zsh" >&2
-  echo "This file is required for ZSH configuration to work properly." >&2
+  print -P "%F{red}Error: helpers.zsh not found at ${ZSH_DIR}/helpers.zsh%f" >&2
+  print -P "%F{red}Error: This file is required for ZSH configuration to work properly.%f" >&2
   return 1
 fi
 
