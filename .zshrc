@@ -28,6 +28,7 @@ export UPDATE_COMMANDS=(
   "antidote update"
   "update_starship"
   "update_tealdeer"
+  "update_nvm_and_node"
 )
 
 export ZSH_DIR="${ZDOTDIR:-$HOME}/.zsh"
@@ -65,6 +66,7 @@ fi
 source_if_exists "${ZSH_DIR}/misc.zsh"
 source_if_exists "${ZSH_DIR}/completions.zsh"
 source_if_exists "${ZSH_DIR}/aliases.zsh"
+source_if_exists "${ZSH_DIR}/nvm.zsh"
 source_if_exists "${ZSH_DIR}/eza.zsh"
 source_if_exists "${ZSH_DIR}/tealdeer.zsh"
 source_if_exists "${ZSH_DIR}/direnv.zsh"
