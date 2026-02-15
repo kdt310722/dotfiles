@@ -50,7 +50,7 @@ if [[ ! -f "${ZSH_DIR}/helpers.zsh" ]]; then
   return 1
 fi
 
-source "${ZDOTDIR:-$HOME}/.envrc"
+source "${ZDOTDIR:-$HOME}/.env"
 source "${ZSH_DIR}/helpers.zsh"
 
 create_dir $ZSH_CONFIG_DIR
