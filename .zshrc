@@ -30,7 +30,7 @@ export ZSH_CONFIG_DIR="${ZSH_DIR}/config"
 export ZSH_DATA_DIR="${ZSH_DIR}/data"
 export ZSH_BIN_DIR="${ZSH_DATA_DIR}/bin"
 export ZSH_INITIALIZED_FILE="${ZSH_DATA_DIR}/INITIALIZED"
-export ZSH_COMPDUMP="${ZSH_DATA_DIR}/zcompdump"
+export ZSH_COMPDUMP="${ZSH_DATA_DIR}/zcompdump-${ZSH_VERSION}"
 export ZSH_COMPLETIONS_DIR="${ZSH_DATA_DIR}/completions"
 
 export PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')"
