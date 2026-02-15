@@ -2,7 +2,7 @@ export PROJECT_PATHS=(
   "$HOME/Projects"
 )
 
-export YSU_MODE=ALL
+export YSU_MODE=BESTMATCH
 export YSU_MESSAGE_POSITION="after"
 export ZSH_UPDATE_INTERVAL=1 # days
 
