@@ -29,9 +29,25 @@ acquire_lock() {
     fi
 
     if [[ -d "$UPDATER_LOCK_FILE" ]]; then
-      local lock_age=$(($(date +%s) - $(stat -f %m "$UPDATER_LOCK_FILE" 2>/dev/null || stat -c %Y "$UPDATER_LOCK_FILE" 2>/dev/null || echo 0)))
+      local lock_mtime=""
+
+      if [[ "$PLATFORM" == "darwin" ]]; then
+        lock_mtime=$(stat -f %m "$UPDATER_LOCK_FILE" 2>/dev/null)
+      else
+        lock_mtime=$(stat -c %Y "$UPDATER_LOCK_FILE" 2>/dev/null)
+      fi
+
+      if [[ -z "$lock_mtime" ]]; then
+        print -P "%F{red}Warning: Cannot read lock file timestamp, assuming lock is active.%f" >&2
+        attempt=$((attempt + 1))
+        sleep 1
+        continue
+      fi
+
+      local lock_age=$(($(date +%s) - lock_mtime))
 
       if [[ $lock_age -gt $UPDATER_LOCK_FILE_AGE_LIMIT ]]; then
+        echo "Removing stale lock (age: ${lock_age}s)" >&2
         rm -rf "$UPDATER_LOCK_FILE"
         continue
       fi
