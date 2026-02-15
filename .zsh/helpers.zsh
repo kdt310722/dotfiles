@@ -187,12 +187,13 @@ get_github_binary_download_url_and_version() {
   esac
 
   local reverse_platform_map_and_arch_map="${8:-false}"
+  local binary_name_delimiter="${9:--}"
   local full_binary_name=""
 
   if is-true-like $reverse_platform_map_and_arch_map; then
-    full_binary_name="${binary_name}-${platform_map}-${arch_map}"
+    full_binary_name="${binary_name}${binary_name_delimiter}${platform_map}-${arch_map}"
   else
-    full_binary_name="${binary_name}-${arch_map}-${platform_map}"
+    full_binary_name="${binary_name}${binary_name_delimiter}${arch_map}-${platform_map}"
   fi
 
   echo "${base_url}/download/v${version}/${full_binary_name}|$version"

@@ -2,6 +2,8 @@ export PROJECT_PATHS=(
   "$HOME/Projects"
 )
 
+export YSU_MODE=ALL
+export YSU_MESSAGE_POSITION="after"
 export ZSH_UPDATE_INTERVAL=1 # days
 
 export ZSH_PLUGINS=(
@@ -15,7 +17,10 @@ export ZSH_PLUGINS=(
   'Tarrasch/zsh-bd'
   'ohmyzsh/ohmyzsh path:plugins/command-not-found'
   'ohmyzsh/ohmyzsh path:plugins/pj'
+  'ohmyzsh/ohmyzsh path:plugins/git'
+  'MichaelAquilina/zsh-you-should-use'
   'zdharma-continuum/fast-syntax-highlighting'
+  'zsh-users/zsh-history-substring-search'
   'zsh-users/zsh-autosuggestions'
 )
 
@@ -57,9 +62,13 @@ source_if_exists "${ZSH_DIR}/completions.zsh"
 source_if_exists "${ZSH_DIR}/aliases.zsh"
 source_if_exists "${ZSH_DIR}/eza.zsh"
 source_if_exists "${ZSH_DIR}/tealdeer.zsh"
+source_if_exists "${ZSH_DIR}/direnv.zsh"
 source_if_exists "${ZSH_DIR}/starship.zsh"
 source_if_exists "${ZSH_DIR}/antidote.zsh"
 source_if_exists "${ZSH_DIR}/updater.zsh"
+
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
 
 touch $ZSH_INITIALIZED_FILE
 
