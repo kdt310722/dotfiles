@@ -3,6 +3,7 @@ export TEALDEER_CONFIG_PATH="${TEALDEER_DATA_DIR}/tealdeer.toml"
 export TEALDEER_CACHE_PATH="${TEALDEER_DATA_DIR}/cache"
 export TEALDEER_PAGES_DIR="${TEALDEER_DATA_DIR}/pages"
 
+TEALDEER_VERSION="latest"
 TEALDEER_BASE_URL="https://github.com/tealdeer-rs/tealdeer/releases"
 TEALDEER_VERSION_FILE="${ZSH_DATA_DIR}/tealdeer_version"
 TEALDEER_BIN="${ZSH_BIN_DIR}/tealdeer"
@@ -20,7 +21,7 @@ EOF
 install_tealdeer() {
   echo "Installing Tealdeer..."
 
-  local result=$(get_github_binary_download_url_and_version "latest" "$TEALDEER_BASE_URL" "linux" "macos" "x86_64" "aarch64" "tealdeer" "true")
+  local result=$(get_github_binary_download_url_and_version "$TEALDEER_VERSION" "$TEALDEER_BASE_URL" "linux" "macos" "x86_64" "aarch64" "tealdeer" "true")
 
   if [[ $? -ne 0 ]]; then
     print -P "%F{red}Error: Failed to get download URL%f" >&2
@@ -103,7 +104,11 @@ update_tealdeer() {
   fi
 
   local current_version=$(cat "$TEALDEER_VERSION_FILE")
-  local latest_version=$(get_latest_github_version "$TEALDEER_BASE_URL")
+  local latest_version=$TEALDEER_VERSION
+
+  if [[ "$latest_version" == "latest" ]]; then
+    latest_version=$(get_latest_github_version "$TEALDEER_BASE_URL")
+  fi
 
   if [[ $? -ne 0 ]]; then
     print -P "%F{red}Error: Failed to check for updates%f" >&2

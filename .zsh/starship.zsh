@@ -1,6 +1,7 @@
 export STARSHIP_CONFIG="${ZSH_CONFIG_DIR}/starship.toml"
 export STARSHIP_CACHE="${ZSH_DATA_DIR}/starship"
 
+STARSHIP_VERSION="latest"
 STARSHIP_BASE_URL="https://github.com/starship/starship/releases"
 STARSHIP_VERSION_FILE="${ZSH_DATA_DIR}/starship_version"
 STARSHIP_BIN="${ZSH_BIN_DIR}/starship"
@@ -8,7 +9,7 @@ STARSHIP_BIN="${ZSH_BIN_DIR}/starship"
 install_starship() {
   echo "Installing Starship..."
 
-  local result=$(get_github_binary_download_url_and_version "latest" "$STARSHIP_BASE_URL" "unknown-linux-gnu" "apple-darwin" "x86_64" "aarch64" "starship")
+  local result=$(get_github_binary_download_url_and_version "$STARSHIP_VERSION" "$STARSHIP_BASE_URL" "unknown-linux-gnu" "apple-darwin" "x86_64" "aarch64" "starship")
 
   if [[ $? -ne 0 ]]; then
     print -P "%F{red}Error: Failed to get download URL%f" >&2
@@ -88,7 +89,11 @@ update_starship() {
   fi
 
   local current_version=$(cat "$STARSHIP_VERSION_FILE")
-  local latest_version=$(get_latest_github_version "$STARSHIP_BASE_URL")
+  local latest_version=$STARSHIP_VERSION
+
+  if [[ "$latest_version" == "latest" ]]; then
+    latest_version=$(get_latest_github_version "$STARSHIP_BASE_URL")
+  fi
 
   if [[ $? -ne 0 ]]; then
     print -P "%F{red}Error: Failed to check for updates%f" >&2
