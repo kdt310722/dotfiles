@@ -65,10 +65,6 @@ release_lock() {
 }
 
 run_updates() {
-  if ! should_run_update; then
-    return 0
-  fi
-
   if ! acquire_lock; then
     return 1
   fi
@@ -103,7 +99,9 @@ run_updates() {
 
 if [[ ${#UPDATE_COMMANDS[@]} -gt 0 ]]; then
   if [[ -f "$ZSH_INITIALIZED_FILE" ]]; then
-    run_updates
+    if should_run_update; then
+      bgr "run_updates" "zsh-updater" "ZSH Update" "ZSH Update Completed" "ZSH Update Failed"
+    fi
   else
     date +%s > "$UPDATER_TIMESTAMP_FILE"
   fi

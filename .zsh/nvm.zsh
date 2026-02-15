@@ -76,6 +76,8 @@ update_nvm_and_node() {
   if has_command bun; then
     bun update -g --latest
   fi
+
+  return 0
 }
 
 sync_global_npm_packages() {
@@ -93,7 +95,7 @@ sync_global_npm_packages() {
     done
 
     if [[ ${#MISSING_PKGS[@]} -gt 0 ]]; then
-        npm install -g "${MISSING_PKGS[@]}"
+        bgr `npm install -g "${MISSING_PKGS[@]}"` "global-npm-packages-sync" "Global NPM Packages Sync" "Global NPM Packages Sync Completed" "Global NPM Packages Sync Failed"
     fi
 }
 
