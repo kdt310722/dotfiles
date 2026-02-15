@@ -5,6 +5,7 @@ export NVM_DEFAULT_PACKAGES=(
     'bun'
     'npm-check'
     'tsx'
+    'zx'
 )
 
 alias latest_nvm_version="cd $NVM_DIR && git describe --abbrev=0 --tags --match \"v[0-9]*\" \$(git rev-list --tags --max-count=1)"
@@ -13,7 +14,7 @@ create_nvm_default_packages_file() {
     truncate -s 0 "$NVM_DIR/default-packages"
 
     for package in "${NVM_DEFAULT_PACKAGES[@]}"; do
-    echo $package >> "$NVM_DIR/default-packages"
+      echo $package >> "$NVM_DIR/default-packages"
     done
 }
 
@@ -76,6 +77,25 @@ update_nvm_and_node() {
   fi
 }
 
+sync_global_npm_packages() {
+    if [[ -z "$NVM_BIN" ]]; then
+        return
+    fi
+
+    local GLOBAL_NODE_MODULES="$NVM_BIN/../lib/node_modules"
+    local MISSING_PKGS=()
+
+    for pkg in "${NVM_DEFAULT_PACKAGES[@]}"; do
+        if [[ ! -d "$GLOBAL_NODE_MODULES/$pkg" ]]; then
+            MISSING_PKGS+=("$pkg")
+        fi
+    done
+
+    if [[ ${#MISSING_PKGS[@]} -gt 0 ]]; then
+        npm install -g "${MISSING_PKGS[@]}"
+    fi
+}
+
 if [[ ! -d $NVM_DIR ]]; then
   install_nvm
 
@@ -93,4 +113,6 @@ if [[ ! -d $NVM_DIR ]]; then
   fi
 else
   create_nvm_default_packages_file
+  \. "$NVM_DIR/nvm.sh"
+  sync_global_npm_packages
 fi
