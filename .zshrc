@@ -50,13 +50,17 @@ if [[ ! -f "${ZSH_DIR}/helpers.zsh" ]]; then
   return 1
 fi
 
-source "${ZDOTDIR:-$HOME}/.env"
 source "${ZSH_DIR}/helpers.zsh"
+source_if_exists "${ZDOTDIR:-$HOME}/.env"
 
 create_dir $ZSH_CONFIG_DIR
 create_dir $ZSH_DATA_DIR
 create_dir $ZSH_BIN_DIR
 create_dir $ZSH_COMPLETIONS_DIR
+
+if [[ -n "$ZSH_AI_PROVIDER" ]]; then
+  ZSH_PLUGINS+="matheusml/zsh-ai"
+fi
 
 source_if_exists "${ZSH_DIR}/misc.zsh"
 source_if_exists "${ZSH_DIR}/completions.zsh"
@@ -70,6 +74,7 @@ source_if_exists "${ZSH_DIR}/updater.zsh"
 
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
+unsetopt noclobber
 
 touch $ZSH_INITIALIZED_FILE
 
