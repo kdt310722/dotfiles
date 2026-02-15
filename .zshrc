@@ -62,3 +62,7 @@ source_if_exists "${ZSH_DIR}/antidote.zsh"
 source_if_exists "${ZSH_DIR}/updater.zsh"
 
 touch $ZSH_INITIALIZED_FILE
+
+export BUN_INSTALL="$HOME/.bun"
+export PNPM_HOME="$HOME/.pnpm"
+export PATH="$BUN_INSTALL/bin:$(npm root -g):$(yarn global bin):$PNPM_HOME:$PATH"
