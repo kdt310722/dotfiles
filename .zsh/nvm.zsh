@@ -2,6 +2,9 @@ export NVM_DIR="$ZSH_DATA_DIR/nvm"
 
 export NVM_DEFAULT_PACKAGES=(
     '@antfu/ni'
+    'bun'
+    'npm-check'
+    'tsx'
 )
 
 alias latest_nvm_version="cd $NVM_DIR && git describe --abbrev=0 --tags --match \"v[0-9]*\" \$(git rev-list --tags --max-count=1)"
@@ -58,6 +61,18 @@ update_nvm_and_node() {
   if has_command corepack; then
     corepack prepare yarn@latest --activate
     corepack prepare pnpm@latest --activate
+  fi
+
+  if has_command npm-check; then
+    npm-check -gy
+  fi
+
+  if has_command pnpm; then
+    pnpm -g up --latest
+  fi
+
+  if has_command bun; then
+    bun update -g --latest
   fi
 }
 
