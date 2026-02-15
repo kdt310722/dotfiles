@@ -86,23 +86,4 @@ if has_command zoxide; then
   eval "$(zoxide init zsh)"
 fi
 
-if has_command bun; then
-  export BUN_INSTALL="$HOME/.bun"
-  export PATH="$BUN_INSTALL/bin:$PATH"
-fi
-
-if has_command npm; then
-  export NODE_PATH="${NODE_PATH:-$(npm root -g)}"
-fi
-
-if has_command yarn; then
-  export YARN_GLOBAL_BIN="${YARN_GLOBAL_BIN:-$(yarn global bin)}"
-  export PATH="$YARN_GLOBAL_BIN:$PATH"
-fi
-
-if has_command pnpm; then
-  export PNPM_HOME="$HOME/.pnpm"
-  export PATH="$PNPM_HOME:$PATH"
-fi
-
 touch $ZSH_INITIALIZED_FILE

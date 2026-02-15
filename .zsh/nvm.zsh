@@ -3,6 +3,7 @@ export NVM_DIR="$ZSH_DATA_DIR/nvm"
 export NVM_DEFAULT_PACKAGES=(
     '@antfu/ni'
     'bun'
+    'deno'
     'npm-check'
     'tsx'
     'zx'
@@ -115,4 +116,23 @@ else
   create_nvm_default_packages_file
   \. "$NVM_DIR/nvm.sh"
   sync_global_npm_packages
+fi
+
+if has_command bun; then
+  export BUN_INSTALL="$HOME/.bun"
+  export PATH="$BUN_INSTALL/bin:$PATH"
+fi
+
+if has_command npm; then
+  export NODE_PATH="${NODE_PATH:-$(npm root -g)}"
+fi
+
+if has_command yarn; then
+  export YARN_GLOBAL_BIN="${YARN_GLOBAL_BIN:-$(yarn global bin)}"
+  export PATH="$YARN_GLOBAL_BIN:$PATH"
+fi
+
+if has_command pnpm; then
+  export PNPM_HOME="$HOME/.pnpm"
+  export PATH="$PNPM_HOME:$PATH"
 fi
