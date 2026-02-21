@@ -115,27 +115,19 @@ init_logging() {
 }
 
 log_info() {
-    local icon="ℹ"
-    detect_utf8_support || icon="i"
-    printf "${COLOR_BLUE}%s${COLOR_RESET}  %s\n" "$icon" "$1"
+    printf "${COLOR_BLUE}i${COLOR_RESET}  %s\n" "$1"
 }
 
 log_success() {
-    local icon="✓"
-    detect_utf8_support || icon="+"
-    printf "${COLOR_GREEN}%s${COLOR_RESET}  %s\n" "$icon" "$1"
+    printf "${COLOR_GREEN}+${COLOR_RESET}  %s\n" "$1"
 }
 
 log_error() {
-    local icon="✗"
-    detect_utf8_support || icon="x"
-    printf "${COLOR_RED}%s${COLOR_RESET}  %s\n" "$icon" "$1" >&2
+    printf "${COLOR_RED}x${COLOR_RESET}  %s\n" "$1" >&2
 }
 
 log_warn() {
-    local icon="⚠"
-    detect_utf8_support || icon="!"
-    printf "${COLOR_YELLOW}%s${COLOR_RESET}  %s\n" "$icon" "$1"
+    printf "${COLOR_YELLOW}!${COLOR_RESET}  %s\n" "$1"
 }
 
 log_step() {
@@ -181,23 +173,13 @@ show_progress() {
     local filled=$((percentage * PROGRESS_WIDTH / 100))
     local empty=$((PROGRESS_WIDTH - filled))
 
-    # Choose characters based on UTF-8 support
-    local char_filled char_empty
-    if detect_utf8_support; then
-        char_filled='█'
-        char_empty='░'
-    else
-        char_filled='#'
-        char_empty='-'
-    fi
-
-    # Build progress bar
+    # Build progress bar with ASCII only
     local bar=""
     if [[ $filled -gt 0 ]]; then
-        bar+="$(printf '%*s' "$filled" '' | tr ' ' "$char_filled")"
+        bar+="$(printf '%*s' "$filled" '' | tr ' ' '#')"
     fi
     if [[ $empty -gt 0 ]]; then
-        bar+="$(printf '%*s' "$empty" '' | tr ' ' "$char_empty")"
+        bar+="$(printf '%*s' "$empty" '' | tr ' ' '-')"
     fi
 
     # Truncate package name if too long
@@ -234,9 +216,7 @@ request_sudo() {
 
     # Prompt for password
     echo
-    local icon_lock="🔒"
-    detect_utf8_support || icon_lock="[sudo]"
-    printf "${COLOR_YELLOW}${COLOR_BOLD}%s  Sudo privileges required${COLOR_RESET}\n" "$icon_lock"
+    printf "${COLOR_YELLOW}${COLOR_BOLD}[sudo]  Sudo privileges required${COLOR_RESET}\n"
     printf "${COLOR_DIM}   This script needs administrative privileges to install packages.${COLOR_RESET}\n"
     echo
 
@@ -817,14 +797,11 @@ print_summary() {
     printf "${COLOR_BOLD}           INSTALLATION SUMMARY${COLOR_RESET}\n"
     printf "${COLOR_BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}\n"
 
-    local icon_check="✓" icon_circle="○" icon_x="✗"
-    detect_utf8_support || { icon_check="+"; icon_circle="o"; icon_x="x"; }
-
-    printf "  ${COLOR_GREEN}%s${COLOR_RESET}  Successfully installed: ${COLOR_GREEN}%d${COLOR_RESET}\n" "$icon_check" "$success_count"
-    printf "  ${COLOR_YELLOW}%s${COLOR_RESET}  Already installed:     ${COLOR_YELLOW}%d${COLOR_RESET}\n" "$icon_circle" "$skipped_count"
+    printf "  ${COLOR_GREEN}+${COLOR_RESET}  Successfully installed: ${COLOR_GREEN}%d${COLOR_RESET}\n" "$success_count"
+    printf "  ${COLOR_YELLOW}o${COLOR_RESET}  Already installed:     ${COLOR_YELLOW}%d${COLOR_RESET}\n" "$skipped_count"
 
     if [[ $failed_count -gt 0 ]]; then
-        printf "  ${COLOR_RED}%s${COLOR_RESET}  Failed:                ${COLOR_RED}%d${COLOR_RESET}\n" "$icon_x" "$failed_count"
+        printf "  ${COLOR_RED}x${COLOR_RESET}  Failed:                ${COLOR_RED}%d${COLOR_RESET}\n" "$failed_count"
         echo
         printf "${COLOR_RED}${COLOR_BOLD}Failed packages:${COLOR_RESET}\n"
         for pkg in "${INSTALL_FAILED[@]}"; do
@@ -836,14 +813,10 @@ print_summary() {
     printf "${COLOR_DIM}Log file: %s${COLOR_RESET}\n" "$LOG_FILE"
 
     if [[ $failed_count -eq 0 ]]; then
-        local icon_party="🎉"
-        detect_utf8_support || icon_party=""
-        printf "\n${COLOR_GREEN}${COLOR_BOLD}%s All tools installed successfully!${COLOR_RESET}\n" "$icon_party"
+        printf "\n${COLOR_GREEN}${COLOR_BOLD}All tools installed successfully!${COLOR_RESET}\n"
         return 0
     else
-        local icon_warn="⚠"
-        detect_utf8_support || icon_warn="!"
-        printf "\n${COLOR_YELLOW}%s Some packages failed to install.${COLOR_RESET}\n" "$icon_warn"
+        printf "\n${COLOR_YELLOW}! Some packages failed to install.${COLOR_RESET}\n"
         return 1
     fi
 }
@@ -965,9 +938,7 @@ main() {
 
     # Header
     echo
-    local icon_rocket="🚀"
-    detect_utf8_support || icon_rocket=">>"
-    printf "${COLOR_CYAN}${COLOR_BOLD}%s  Install Tools${COLOR_RESET}\n" "$icon_rocket"
+    printf "${COLOR_CYAN}${COLOR_BOLD}>>  Install Tools${COLOR_RESET}\n"
     printf "${COLOR_DIM}    OS: %s | Package Manager: %s${COLOR_RESET}\n" "$OS_TYPE" "$PKG_MANAGER"
     printf "${COLOR_DIM}    Date: $(date '+%Y-%m-%d %H:%M:%S')${COLOR_RESET}\n"
     echo
