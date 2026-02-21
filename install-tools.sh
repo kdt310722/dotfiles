@@ -241,49 +241,7 @@ setup_macos_cli_tools() {
 }
 
 # ============================================
-# � ZSH SHELL CONFIGURATION
-# ============================================
-setup_zsh_default_shell() {
-    log_step "Setting zsh as default shell ${ICON_GEAR}"
-
-    if ! command -v zsh &>/dev/null; then
-        log_error "zsh is not installed"
-        return 1
-    fi
-
-    local zsh_path
-    zsh_path=$(command -v zsh)
-    log_info "Found zsh at: ${COLOR_CYAN}$zsh_path${COLOR_RESET}"
-
-    local current_shell
-    current_shell=$(dscl . -read ~/ UserShell 2>/dev/null | awk '{print $2}' || echo "$SHELL")
-
-    if [[ "$current_shell" == "$zsh_path" ]]; then
-        log_success "zsh is already the default shell"
-        return 0
-    fi
-
-    case "$OS_TYPE" in
-        debian)
-            printf "  ${ICON_PACKAGE} Changing default shell to zsh... "
-            if echo "$zsh_path" | sudo tee /etc/shells &>/dev/null && sudo chsh -s "$zsh_path" "$USER" &>/dev/null; then
-                printf "${COLOR_GREEN}done${COLOR_RESET}\n"
-                log_success "Default shell changed to zsh for user: $USER"
-                log_warn "Please log out and log back in for changes to take effect"
-            else
-                printf "${COLOR_RED}failed${COLOR_RESET}\n"
-                log_error "Failed to change default shell to zsh"
-                return 1
-            fi
-            ;;
-        macos)
-            log_success "zsh is already the default shell on macOS"
-            ;;
-    esac
-}
-
-# ============================================
-# �📊 SUMMARY
+# 📊 SUMMARY
 # ============================================
 print_summary() {
     printf "\n${COLOR_GREEN}${ICON_DONE}${COLOR_RESET} ${COLOR_BOLD}COMPLETED!${COLOR_RESET}\n"
@@ -349,9 +307,6 @@ main() {
     install_category "system"
     install_category "build"
     install_utility_tools
-
-    # Setup zsh as default shell
-    setup_zsh_default_shell
 
     # Summary
     print_summary
