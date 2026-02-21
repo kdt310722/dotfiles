@@ -143,18 +143,6 @@ declare -g CURRENT_PROGRESS=0
 declare -g TOTAL_PACKAGES=0
 declare -g PROGRESS_WIDTH=40
 
-# Detect UTF-8 support
-detect_utf8_support() {
-    if [[ -n "${LANG:-}" && "$LANG" == *"UTF-8"* ]] || [[ -n "${LC_ALL:-}" && "$LC_ALL" == *"UTF-8"* ]]; then
-        return 0
-    fi
-    # Fallback: check if terminal can display Unicode
-    if printf '█' | od -c 2>/dev/null | grep -q '342 226 226'; then
-        return 0
-    fi
-    return 1
-}
-
 init_progress() {
     CURRENT_PROGRESS=0
     TOTAL_PACKAGES=$1
