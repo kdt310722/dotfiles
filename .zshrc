@@ -88,4 +88,8 @@ if has_command zoxide; then
   eval "$(zoxide init zsh)"
 fi
 
+if has_command go; then
+  export PATH="$PATH:$(go env GOPATH)/bin"
+fi
+
 touch $ZSH_INITIALIZED_FILE
