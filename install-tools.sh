@@ -115,19 +115,27 @@ init_logging() {
 }
 
 log_info() {
-    printf "${COLOR_BLUE}ℹ${COLOR_RESET}  %s\n" "$1"
+    local icon="ℹ"
+    detect_utf8_support || icon="i"
+    printf "${COLOR_BLUE}%s${COLOR_RESET}  %s\n" "$icon" "$1"
 }
 
 log_success() {
-    printf "${COLOR_GREEN}✓${COLOR_RESET}  %s\n" "$1"
+    local icon="✓"
+    detect_utf8_support || icon="+"
+    printf "${COLOR_GREEN}%s${COLOR_RESET}  %s\n" "$icon" "$1"
 }
 
 log_error() {
-    printf "${COLOR_RED}✗${COLOR_RESET}  %s\n" "$1" >&2
+    local icon="✗"
+    detect_utf8_support || icon="x"
+    printf "${COLOR_RED}%s${COLOR_RESET}  %s\n" "$icon" "$1" >&2
 }
 
 log_warn() {
-    printf "${COLOR_YELLOW}⚠${COLOR_RESET}  %s\n" "$1"
+    local icon="⚠"
+    detect_utf8_support || icon="!"
+    printf "${COLOR_YELLOW}%s${COLOR_RESET}  %s\n" "$icon" "$1"
 }
 
 log_step() {
@@ -142,6 +150,18 @@ log_step() {
 declare -g CURRENT_PROGRESS=0
 declare -g TOTAL_PACKAGES=0
 declare -g PROGRESS_WIDTH=40
+
+# Detect UTF-8 support
+detect_utf8_support() {
+    if [[ -n "${LANG:-}" && "$LANG" == *"UTF-8"* ]] || [[ -n "${LC_ALL:-}" && "$LC_ALL" == *"UTF-8"* ]]; then
+        return 0
+    fi
+    # Fallback: check if terminal can display Unicode
+    if printf '█' | od -c 2>/dev/null | grep -q '342 226 226'; then
+        return 0
+    fi
+    return 1
+}
 
 init_progress() {
     CURRENT_PROGRESS=0
@@ -161,13 +181,23 @@ show_progress() {
     local filled=$((percentage * PROGRESS_WIDTH / 100))
     local empty=$((PROGRESS_WIDTH - filled))
 
+    # Choose characters based on UTF-8 support
+    local char_filled char_empty
+    if detect_utf8_support; then
+        char_filled='█'
+        char_empty='░'
+    else
+        char_filled='#'
+        char_empty='-'
+    fi
+
     # Build progress bar
     local bar=""
     if [[ $filled -gt 0 ]]; then
-        bar+="$(printf '%*s' "$filled" '' | tr ' ' '█')"
+        bar+="$(printf '%*s' "$filled" '' | tr ' ' "$char_filled")"
     fi
     if [[ $empty -gt 0 ]]; then
-        bar+="$(printf '%*s' "$empty" '' | tr ' ' '░')"
+        bar+="$(printf '%*s' "$empty" '' | tr ' ' "$char_empty")"
     fi
 
     # Truncate package name if too long
@@ -204,7 +234,9 @@ request_sudo() {
 
     # Prompt for password
     echo
-    printf "${COLOR_YELLOW}${COLOR_BOLD}🔒  Sudo privileges required${COLOR_RESET}\n"
+    local icon_lock="🔒"
+    detect_utf8_support || icon_lock="[sudo]"
+    printf "${COLOR_YELLOW}${COLOR_BOLD}%s  Sudo privileges required${COLOR_RESET}\n" "$icon_lock"
     printf "${COLOR_DIM}   This script needs administrative privileges to install packages.${COLOR_RESET}\n"
     echo
 
@@ -493,8 +525,8 @@ run_external_installer() {
         echo "External installer: $name"
         echo "Started at: $(date '+%Y-%m-%d %H:%M:%S')"
         echo "========================================"
-        "install_$name" 2>&1
-        local exit_code=$?
+        local exit_code=0
+        "install_$name" 2>&1 || exit_code=$?
         echo "========================================"
         echo "Exit code: $exit_code"
         echo "========================================"
@@ -541,9 +573,9 @@ install_worker() {
     local is_external=$2
 
     if [[ "$is_external" == "true" ]]; then
-        # External installer
-        run_external_installer "${pkg#ext_}" > /dev/null 2>&1
-        local exit_code=$?
+        # External installer - run in subshell to prevent set -e from triggering on exit code 2
+        local exit_code=0
+        (run_external_installer "${pkg#ext_}" > /dev/null 2>&1) || exit_code=$?
         if [[ $exit_code -eq 0 ]]; then
             echo "SUCCESS:$pkg"
         elif [[ $exit_code -eq 2 ]]; then
@@ -753,8 +785,9 @@ run_installation_sequential() {
         local name="${ext#ext_}"
         show_progress "$CURRENT_PROGRESS" "$TOTAL_PACKAGES" "$name"
 
-        run_external_installer "$name" > /dev/null 2>&1
-        local exit_code=$?
+        # Run in subshell to prevent set -e from triggering on exit code 2
+        local exit_code=0
+        (run_external_installer "$name" > /dev/null 2>&1) || exit_code=$?
         if [[ $exit_code -eq 0 ]]; then
             record_result "$name" "success"
         elif [[ $exit_code -eq 2 ]]; then
@@ -784,11 +817,14 @@ print_summary() {
     printf "${COLOR_BOLD}           INSTALLATION SUMMARY${COLOR_RESET}\n"
     printf "${COLOR_BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}\n"
 
-    printf "  ${COLOR_GREEN}✓${COLOR_RESET}  Successfully installed: ${COLOR_GREEN}%d${COLOR_RESET}\n" "$success_count"
-    printf "  ${COLOR_YELLOW}○${COLOR_RESET}  Already installed:     ${COLOR_YELLOW}%d${COLOR_RESET}\n" "$skipped_count"
+    local icon_check="✓" icon_circle="○" icon_x="✗"
+    detect_utf8_support || { icon_check="+"; icon_circle="o"; icon_x="x"; }
+
+    printf "  ${COLOR_GREEN}%s${COLOR_RESET}  Successfully installed: ${COLOR_GREEN}%d${COLOR_RESET}\n" "$icon_check" "$success_count"
+    printf "  ${COLOR_YELLOW}%s${COLOR_RESET}  Already installed:     ${COLOR_YELLOW}%d${COLOR_RESET}\n" "$icon_circle" "$skipped_count"
 
     if [[ $failed_count -gt 0 ]]; then
-        printf "  ${COLOR_RED}✗${COLOR_RESET}  Failed:                ${COLOR_RED}%d${COLOR_RESET}\n" "$failed_count"
+        printf "  ${COLOR_RED}%s${COLOR_RESET}  Failed:                ${COLOR_RED}%d${COLOR_RESET}\n" "$icon_x" "$failed_count"
         echo
         printf "${COLOR_RED}${COLOR_BOLD}Failed packages:${COLOR_RESET}\n"
         for pkg in "${INSTALL_FAILED[@]}"; do
@@ -800,10 +836,14 @@ print_summary() {
     printf "${COLOR_DIM}Log file: %s${COLOR_RESET}\n" "$LOG_FILE"
 
     if [[ $failed_count -eq 0 ]]; then
-        printf "\n${COLOR_GREEN}${COLOR_BOLD}🎉 All tools installed successfully!${COLOR_RESET}\n"
+        local icon_party="🎉"
+        detect_utf8_support || icon_party=""
+        printf "\n${COLOR_GREEN}${COLOR_BOLD}%s All tools installed successfully!${COLOR_RESET}\n" "$icon_party"
         return 0
     else
-        printf "\n${COLOR_YELLOW}⚠ Some packages failed to install.${COLOR_RESET}\n"
+        local icon_warn="⚠"
+        detect_utf8_support || icon_warn="!"
+        printf "\n${COLOR_YELLOW}%s Some packages failed to install.${COLOR_RESET}\n" "$icon_warn"
         return 1
     fi
 }
@@ -925,7 +965,9 @@ main() {
 
     # Header
     echo
-    printf "${COLOR_CYAN}${COLOR_BOLD}🚀  Install Tools${COLOR_RESET}\n"
+    local icon_rocket="🚀"
+    detect_utf8_support || icon_rocket=">>"
+    printf "${COLOR_CYAN}${COLOR_BOLD}%s  Install Tools${COLOR_RESET}\n" "$icon_rocket"
     printf "${COLOR_DIM}    OS: %s | Package Manager: %s${COLOR_RESET}\n" "$OS_TYPE" "$PKG_MANAGER"
     printf "${COLOR_DIM}    Date: $(date '+%Y-%m-%d %H:%M:%S')${COLOR_RESET}\n"
     echo
