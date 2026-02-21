@@ -51,6 +51,8 @@ if [[ ! -f "${ZSH_DIR}/helpers.zsh" ]]; then
   return 1
 fi
 
+unsetopt noclobber
+
 source "${ZSH_DIR}/helpers.zsh"
 source_if_exists "${ZDOTDIR:-$HOME}/.env"
 
@@ -78,7 +80,7 @@ bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 unsetopt noclobber
 
-if has_command fzf; then
+if has_command fzf && [[ "$PLATFORM" == "darwin" ]]; then
   source <(fzf --zsh)
 fi
 

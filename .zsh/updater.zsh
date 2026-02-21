@@ -85,7 +85,7 @@ run_updates() {
   done
 
   if [[ $failed -eq 0 ]]; then
-    date +%s > "$UPDATER_TIMESTAMP_FILE"
+    date +%s >! "$UPDATER_TIMESTAMP_FILE"
     echo "Updates completed successfully."
   else
     print -P "%F{red}Error: Some updates failed. Will retry on next session.%f" >&2
@@ -103,6 +103,6 @@ if [[ ${#UPDATE_COMMANDS[@]} -gt 0 ]]; then
       bgr "run_updates" "zsh-updater" "ZSH Update" "ZSH Update Completed" "ZSH Update Failed"
     fi
   else
-    date +%s > "$UPDATER_TIMESTAMP_FILE"
+    date +%s >! "$UPDATER_TIMESTAMP_FILE"
   fi
 fi

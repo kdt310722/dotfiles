@@ -29,6 +29,11 @@ install_tealdeer() {
   fi
 
   local download_url="${result%|*}"
+
+  if [[ "$PLATFORM" == "linux" ]]; then
+    download_url="${download_url}-musl"
+  fi
+
   local actual_version="${result#*|}"
   local temp_dir="${ZSH_DATA_DIR}/tmp"
 
