@@ -1,6 +1,7 @@
 UPDATER_LOCK_FILE="${ZSH_DATA_DIR}/updater.lock"
 UPDATER_TIMESTAMP_FILE="${ZSH_DATA_DIR}/last_update"
 UPDATER_LOCK_FILE_AGE_LIMIT=600 # seconds
+DOTFILES_DIR="${ZDOTDIR:-$HOME}"
 
 should_run_update() {
   if [[ ! -f "$UPDATER_TIMESTAMP_FILE" ]]; then
@@ -64,12 +65,51 @@ release_lock() {
   rm -rf "$UPDATER_LOCK_FILE"
 }
 
+# Returns 0 if dotfiles is up-to-date (proceed with other updates)
+# Returns 1 if dotfiles was just pulled (skip other updates this session)
+check_and_update_dotfiles() {
+  if [[ ! -d "${DOTFILES_DIR}/.git" ]]; then
+    return 0
+  fi
+
+  echo "Checking dotfiles for updates..."
+
+  if ! git -C "$DOTFILES_DIR" fetch --quiet 2>/dev/null; then
+    print -P "%F{yellow}Warning: Could not fetch dotfiles remote, skipping check.%f" >&2
+    return 0
+  fi
+
+  local behind
+  behind=$(git -C "$DOTFILES_DIR" rev-list HEAD..FETCH_HEAD --count 2>/dev/null)
+
+  if [[ -z "$behind" || "$behind" -eq 0 ]]; then
+    return 0
+  fi
+
+  echo "Dotfiles has ${behind} new commit(s). Pulling..."
+
+  if git -C "$DOTFILES_DIR" pull --ff-only 2>&1; then
+    print -P "%F{green}Dotfiles updated. Other updates will run next session.%f"
+    return 1
+  else
+    print -P "%F{red}Warning: Dotfiles pull failed. Proceeding with other updates.%f" >&2
+    return 0
+  fi
+}
+
 run_updates() {
   if ! acquire_lock; then
     return 1
   fi
 
   trap "release_lock" EXIT INT TERM
+
+  if ! check_and_update_dotfiles; then
+    release_lock
+    trap - EXIT INT TERM
+    return 0
+  fi
+
   echo "Running updates..."
 
   local failed=0
