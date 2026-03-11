@@ -54,7 +54,7 @@ fi
 unsetopt noclobber
 
 source "${ZSH_DIR}/helpers.zsh"
-source_if_exists "${ZDOTDIR:-$HOME}/.env"
+load_env "${ZDOTDIR:-$HOME}/.env"
 
 create_dir $ZSH_CONFIG_DIR
 create_dir $ZSH_DATA_DIR
@@ -90,6 +90,10 @@ fi
 
 if has_command go; then
   export PATH="$PATH:$(go env GOPATH)/bin"
+fi
+
+if [[ "${${(%):-%x}:A}" != "${HOME}/.zshrc" ]]; then
+  source_if_exists "${HOME}/.zshrc"
 fi
 
 touch $ZSH_INITIALIZED_FILE

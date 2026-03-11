@@ -19,6 +19,32 @@ source_if_exists() {
   fi
 }
 
+load_env() {
+  local env_file="$1"
+
+  if [[ ! -r "$env_file" ]]; then
+    return 0
+  fi
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    # Skip comments and empty lines
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    [[ -z "${line// }" ]] && continue
+    # Only accept KEY=VALUE (key must be a valid identifier)
+    if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+      local key="${match[1]}"
+      local value="${match[2]}"
+      # Strip surrounding quotes if present
+      if [[ "$value" =~ ^\"(.*)\"$ ]] || [[ "$value" =~ ^\'(.*)\'$ ]]; then
+        value="${match[1]}"
+      fi
+      export "${key}=${value}"
+    else
+      print -P "%F{yellow}Warning: .env skipped invalid line: $line%f" >&2
+    fi
+  done < "$env_file"
+}
+
 has_command() {
   command -v $1 &> /dev/null
 }
