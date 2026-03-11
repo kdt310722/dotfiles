@@ -210,7 +210,7 @@ notify() {
         fi
         ;;
       linux)
-        if has_command notify-send; then
+        if has_command notify-send && [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
           notify-send "$title" "$message"
         fi
         ;;
