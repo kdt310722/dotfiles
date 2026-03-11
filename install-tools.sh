@@ -139,9 +139,9 @@ log_step() {
 # ============================================
 
 # Global variables for progress tracking
-declare -g CURRENT_PROGRESS=0
-declare -g TOTAL_PACKAGES=0
-declare -g PROGRESS_WIDTH=40
+CURRENT_PROGRESS=0
+TOTAL_PACKAGES=0
+PROGRESS_WIDTH=40
 
 init_progress() {
     CURRENT_PROGRESS=0
@@ -410,12 +410,23 @@ install_with_retry() {
 # ============================================
 
 # Format: tool_name="os1,os2,..."
-declare -A EXTERNAL_INSTALLERS=(
-    ["zoxide"]="macos,linux"
-    ["homebrew"]="macos"
-    ["eza_linux"]="linux"
-    ["uv"]="macos,linux"
+EXTERNAL_INSTALLERS_KEYS=(
+    "zoxide"
+    "homebrew"
+    "eza_linux"
+    "uv"
 )
+
+get_external_supported_oses() {
+    local name=$1
+    case "$name" in
+        "zoxide") echo "macos,linux" ;;
+        "homebrew") echo "macos" ;;
+        "eza_linux") echo "linux" ;;
+        "uv") echo "macos,linux" ;;
+        *) echo "" ;;
+    esac
+}
 
 install_zoxide() {
     command -v zoxide &>/dev/null && return 2
@@ -459,7 +470,8 @@ install_uv() {
 
 is_external_supported() {
     local name=$1
-    local supported_oses="${EXTERNAL_INSTALLERS[$name]:-}"
+    local supported_oses
+    supported_oses=$(get_external_supported_oses "$name")
 
     if [[ -z "$supported_oses" ]]; then
         return 1
@@ -507,7 +519,6 @@ run_external_installer() {
 # ============================================
 
 # Result tracking
-declare -A INSTALL_RESULTS
 declare -a INSTALL_FAILED
 declare -a INSTALL_SKIPPED
 declare -a INSTALL_SUCCESS
@@ -571,32 +582,38 @@ install_worker() {
 # ============================================
 
 build_package_list() {
-    local -n list=$1
+    local list_name=$1
 
     # Add common packages
-    list+=("${PACKAGES_COMMON[@]}")
+    for pkg in "${PACKAGES_COMMON[@]}"; do
+        eval "${list_name}+=(\"\$pkg\")"
+    done
 
     # Add OS-specific packages
     case "$OS_TYPE" in
         macos)
-            list+=("${PACKAGES_MACOS[@]}")
+            for pkg in "${PACKAGES_MACOS[@]}"; do
+                eval "${list_name}+=(\"\$pkg\")"
+            done
             ;;
         linux)
-            list+=("${PACKAGES_LINUX[@]}")
+            for pkg in "${PACKAGES_LINUX[@]}"; do
+                eval "${list_name}+=(\"\$pkg\")"
+            done
             ;;
     esac
 }
 
 build_external_list() {
-    local -n list=$1
+    local list_name=$1
 
-    for name in "${!EXTERNAL_INSTALLERS[@]}"; do
+    for name in "${EXTERNAL_INSTALLERS_KEYS[@]}"; do
         if is_external_supported "$name"; then
             # Skip eza on macOS if already in brew packages
             if [[ "$name" == "eza_linux" && "$OS_TYPE" == "macos" ]]; then
                 continue
             fi
-            list+=("ext_$name")
+            eval "${list_name}+=(\"ext_\$name\")"
         fi
     done
 }
@@ -661,25 +678,34 @@ run_installation() {
 }
 
 launch_batch() {
-    local -n items=$1
-    local -n pid_list=$2
+    local items_name=$1
+    local pid_list_name=$2
 
-    for item in "${items[@]}"; do
+    local -a items_copy
+    eval "items_copy=(\"\${${items_name}[@]}\")"
+
+    for item in "${items_copy[@]}"; do
         local is_external="false"
         [[ "$item" == ext_* ]] && is_external="true"
 
         install_worker "$item" "$is_external" &
-        pid_list+=($!)
+        eval "${pid_list_name}+=($!)"
     done
 }
 
 wait_and_collect() {
-    local -n pids=$1
-    local -n items=$2
+    local pids_name=$1
+    local items_name=$2
     local idx=0
 
-    for pid in "${pids[@]}"; do
-        local item="${items[$idx]}"
+    local -a pids_copy
+    eval "pids_copy=(\"\${${pids_name}[@]}\")"
+
+    local -a items_copy
+    eval "items_copy=(\"\${${items_name}[@]}\")"
+
+    for pid in "${pids_copy[@]}"; do
+        local item="${items_copy[$idx]}"
         local output
 
         if wait "$pid"; then
