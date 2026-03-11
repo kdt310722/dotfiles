@@ -38,6 +38,8 @@ load_env() {
       if [[ "$value" =~ ^\"(.*)\"$ ]] || [[ "$value" =~ ^\'(.*)\'$ ]]; then
         value="${match[1]}"
       fi
+      # Unset first if currently an array to avoid type conflict
+      [[ "${(tP)key}" == *array* ]] && unset "$key"
       export "${key}=${value}"
     else
       print -P "%F{yellow}Warning: .env skipped invalid line: $line%f" >&2

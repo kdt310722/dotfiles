@@ -56,6 +56,10 @@ unsetopt noclobber
 source "${ZSH_DIR}/helpers.zsh"
 load_env "${ZDOTDIR:-$HOME}/.env"
 
+if [[ "${(t)PROJECT_PATHS}" == *scalar* ]]; then
+  PROJECT_PATHS=("${(@s/:/)PROJECT_PATHS}")
+fi
+
 create_dir $ZSH_CONFIG_DIR
 create_dir $ZSH_DATA_DIR
 create_dir $ZSH_BIN_DIR
