@@ -38,6 +38,12 @@ load_env() {
       if [[ "$value" =~ ^\"(.*)\"$ ]] || [[ "$value" =~ ^\'(.*)\'$ ]]; then
         value="${match[1]}"
       fi
+      # Expand $VAR / ${VAR} but block command substitution $(...) and backticks
+      if [[ "$value" == *'$('* || "$value" == *'`'* ]]; then
+        print -P "%F{yellow}Warning: .env command substitution not allowed: $key%f" >&2
+      else
+        value="${(e)value}"
+      fi
       # Unset first if currently an array to avoid type conflict
       [[ "${(tP)key}" == *array* ]] && unset "$key"
       export "${key}=${value}"
