@@ -80,7 +80,7 @@ readonly COLOR_CYAN='\033[0;36m'
 # ============================================
 
 # Log file descriptor (initialized in init_logging)
-LOG_FD=""
+LOG_FD=3
 
 log_to_file() {
     if [[ -n "$LOG_FD" ]]; then
@@ -109,7 +109,7 @@ log_cmd_output() {
 init_logging() {
     mkdir -p "$LOG_DIR"
     # Open log file descriptor
-    exec {LOG_FD}>>"$LOG_FILE"
+    exec 3>>"$LOG_FILE"
     log_to_file "=== Install Tools started at $(date) ==="
     log_to_file "=== OS: $OS_TYPE | Distro: ${DISTRO:-unknown} ==="
 }
@@ -917,7 +917,7 @@ cleanup() {
     echo "=== Install Tools finished at $(date) with exit code $exit_code ===" >&$LOG_FD
 
     # Close log file descriptor
-    exec {LOG_FD}>&- 2>/dev/null || true
+    exec 3>&- 2>/dev/null || true
 
     exit $exit_code
 }
