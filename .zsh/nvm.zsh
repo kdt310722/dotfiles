@@ -1,4 +1,5 @@
 export NVM_DIR="$ZSH_DATA_DIR/nvm"
+export NVM_SYMLINK_CURRENT=true
 
 export NVM_DEFAULT_PACKAGES=(
     '@antfu/ni'
@@ -120,9 +121,14 @@ else
   sync_global_npm_packages
 fi
 
+NVM_PATHS=()
+
 if has_command bun; then
   export BUN_INSTALL="$HOME/.bun"
-  export PATH="$BUN_INSTALL/bin:$PATH"
+  export BUN_BIN_DIR="$BUN_INSTALL/bin"
+  export PATH="$BUN_BIN_DIR:$PATH"
+  
+  NVM_PATHS+=("$BUN_BIN_DIR")
 fi
 
 if has_command npm; then
@@ -132,4 +138,29 @@ fi
 if has_command pnpm; then
   export PNPM_HOME="$HOME/.pnpm"
   export PATH="$PNPM_HOME:$PATH"
+
+  NVM_PATHS+=("$PNPM_HOME")
 fi
+
+for dir in "$NVM_DIR/versions/node"/*/; do
+  [[ -d "$dir/bin" ]] && NVM_PATHS+=("${dir%/}/bin")
+done
+
+case "$PLATFORM" in
+  darwin)
+    local nvm_paths_file="$ZSH_DATA_DIR/nvm-paths"
+    printf '%s\n' "${NVM_PATHS[@]}" > "$nvm_paths_file"
+
+    if [[ ! -L /etc/paths.d/nvm ]]; then
+      sudo ln -sf "$nvm_paths_file" /etc/paths.d/nvm
+    fi
+    ;;
+  linux)
+    local nvm_paths_file="$ZSH_DATA_DIR/nvm-paths.sh"
+    printf 'export PATH="%s:$PATH"\n' "${NVM_PATHS[@]}" > "$nvm_paths_file"
+
+    if [[ ! -L /etc/profile.d/nvm.sh ]]; then
+      sudo ln -sf "$nvm_paths_file" /etc/profile.d/nvm.sh
+    fi
+    ;;
+esac
